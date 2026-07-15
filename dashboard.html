@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Referral Scan Tracker</title>
+<style>
+  :root {
+    --ink: #1c1c1a;
+    --paper: #fafaf8;
+    --line: #e4e2dc;
+    --accent: #2f5d50;
+    --muted: #6b6a64;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Courier New', ui-monospace, monospace;
+    padding: 40px 24px 80px;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 28px;
+  }
+  h1 {
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  #updated { font-size: 12px; color: var(--muted); }
+
+  .client-block { margin-bottom: 36px; }
+  .client-title {
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .client-title .client-total { color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: normal;
+  }
+  td.scans { font-weight: bold; color: var(--accent); text-align: right; }
+  th.scans { text-align: right; }
+
+  .grand-total {
+    margin-top: 12px;
+    padding-top: 14px;
+    border-top: 2px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+  .grand-total .num { font-weight: bold; color: var(--accent); font-size: 18px; }
+  .note { color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Referral Scan Tracker</h1>
+      <span id="updated">loading…</span>
+    </header>
+    <div id="clientBlocks"></div>
+    <div class="grand-total">
+      <span>Grand total (all clients)</span>
+      <span class="num" id="grandTotal">0</span>
+    </div>
+    <p class="note">
+      Counts come from this project's own database (Upstash Redis via
+      Vercel) — reload to refresh. Add more clients any time by editing
+      links.json and redeploying.
+    </p>
+  </div>
+
+<script>
+async function load() {
+  const container = document.getElementById("clientBlocks");
+  let results = [];
+  try {
+    const res = await fetch('/api/stats');
+    results = await res.json();
+  } catch (e) {
+    container.innerHTML = '<p>Could not load stats.</p>';
+    return;
+  }
+
+  const byClient = {};
+  for (const r of results) {
+    const client = r.client || "Other";
+    if (!byClient[client]) byClient[client] = [];
+    byClient[client].push(r);
+  }
+
+  container.innerHTML = "";
+  let grandTotal = 0;
+
+  const clientNames = Object.keys(byClient).sort();
+  for (const client of clientNames) {
+    const rows = byClient[client].sort((a, b) => b.scans - a.scans);
+    const clientTotal = rows.reduce((sum, r) => sum + r.scans, 0);
+    grandTotal += clientTotal;
+
+    const block = document.createElement("div");
+    block.className = "client-block";
+
+    const title = document.createElement("div");
+    title.className = "client-title";
+    title.innerHTML = `<span>${client}</span><span class="client-total">${clientTotal} scans</span>`;
+    block.appendChild(title);
+
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    thead.innerHTML = `<tr><th>Name</th><th class="scans">Scans</th></tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.name}</td><td class="scans">${r.scans}</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    block.appendChild(table);
+
+    container.appendChild(block);
+  }
+
+  document.getElementById("grandTotal").textContent = grandTotal;
+  document.getElementById("updated").textContent = "updated " + new Date().toLocaleTimeString();
+}
+load();
+setInterval(load, 15000);
+</script>
+</body>
+</html>
