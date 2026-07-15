@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Referral Scan Tracker</title>
+<style>
+  :root {
+    --ink: #1c1c1a;
+    --paper: #fafaf8;
+    --line: #e4e2dc;
+    --accent: #2f5d50;
+    --muted: #6b6a64;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Courier New', ui-monospace, monospace;
+    padding: 40px 24px 80px;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 28px;
+  }
+  h1 {
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  #updated { font-size: 12px; color: var(--muted); }
+
+  .client-block { margin-bottom: 36px; }
+  .client-title {
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .client-title .client-total { color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: normal;
+  }
+  td.scans { font-weight: bold; color: var(--accent); text-align: right; }
+  th.scans { text-align: right; }
+
+  .grand-total {
+    margin-top: 12px;
+    padding-top: 14px;
+    border-top: 2px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+  .grand-total .num { font-weight: bold; color: var(--accent); font-size: 18px; }
+  .note { color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Referral Scan Tracker</h1>
+      <span id="updated">loading…</span>
+    </header>
+    <div id="clientBlocks"></div>
+    <div class="grand-total">
+      <span>Grand total (all clients)</span>
+      <span class="num" id="grandTotal">0</span>
+    </div>
+    <p class="note">
+      Counts are read live from a free public counter service (counterapi.dev)
+      each time this page loads. Reload to refresh. Add more clients any time
+      by editing links.json / redirect.html — no other changes needed.
+    </p>
+  </div>
+
+<script>
+const NAMESPACE = "hoodie-connect-referrals"; // must match redirect.html
+
+const LINKS = {"gron-laural-romig": {"name": "Laural Romig", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=NlAqzEsQBb"}, "gron-tj-krol": {"name": "TJ Krol", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=GujJaDvhGb"}, "gron-tara-mooney": {"name": "Tara Mooney", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=diQFTLTsuY"}, "gron-dan-fortunato": {"name": "Dan Fortunato", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=7NeAEO79vs"}, "gron-courtney-gavin": {"name": "Courtney Gavin", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=cH8HFbhJPE"}, "gron-nathan-brookes": {"name": "Nathan Brookes", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=1BttMzoRvW"}, "gron-julianne-mellon": {"name": "Julianne Mellon", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=q0LNrKIJke"}, "gron-derek-adams": {"name": "Derek Adams", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=GHGEbBJ32v"}, "gron-tony-floro": {"name": "Tony Floro", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=WCoJpNUuFg"}, "gron-kody-sallee": {"name": "Kody Sallee", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=81nDp5ALHU"}, "gron-ethan-lende": {"name": "Ethan Lende", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=1iuIi8oafg"}, "gron-elise-mcdonough": {"name": "Elise McDonough", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=nmA2ggaDtl"}, "gron-josh-fitzsimmons": {"name": "Josh Fitzsimmons", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=XRpwfVHBQX"}, "gron-michael-thale": {"name": "Michael Thale", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=HXFMboCAcY"}, "gron-brian-nichols": {"name": "Brian Nichols", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=XH9uZEtWdJ"}, "gron-savanna-fowler": {"name": "Savanna Fowler", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=wWK8CmDicy"}, "gron-draper-bender": {"name": "Draper Bender", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=dZDU5dcH8L"}, "gron-rob-buchwald": {"name": "Rob Buchwald", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=7AFRe0fv11"}, "gron-andre-thompson": {"name": "Andre Thompson", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=Xheh0NF0Bi"}, "gron-alex-hooker": {"name": "Alex Hooker", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=rpDxsYuAhu"}, "gron-emily-chamoff": {"name": "Emily Chamoff", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=QdanZjzHz2"}, "gron-ashley-eckman": {"name": "Ashley Eckman", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=V7njPJ2zrF"}, "gron-skylar-tanner": {"name": "Skylar Tanner", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=a4WZtC3o65"}, "gron-khai-banh": {"name": "Khai Banh", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=uwAtat2s6r"}, "gron-chris-nu-ez": {"name": "Chris Nu\u00f1ez", "client": "Gron", "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=xUW1yDsfCw"}};
+
+async function load() {
+  const entries = Object.entries(LINKS);
+
+  const results = await Promise.all(entries.map(async ([slug, entry]) => {
+    let count = 0;
+    try {
+      const res = await fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${slug}`);
+      const data = await res.json();
+      count = data.count || 0;
+    } catch (e) {
+      count = 0;
+    }
+    return { slug, name: entry.name, client: entry.client, scans: Number(count) };
+  }));
+
+  // Group by client
+  const byClient = {};
+  for (const r of results) {
+    if (!byClient[r.client]) byClient[r.client] = [];
+    byClient[r.client].push(r);
+  }
+
+  const container = document.getElementById("clientBlocks");
+  container.innerHTML = "";
+  let grandTotal = 0;
+
+  const clientNames = Object.keys(byClient).sort();
+  for (const client of clientNames) {
+    const rows = byClient[client].sort((a, b) => b.scans - a.scans);
+    const clientTotal = rows.reduce((sum, r) => sum + r.scans, 0);
+    grandTotal += clientTotal;
+
+    const block = document.createElement("div");
+    block.className = "client-block";
+
+    const title = document.createElement("div");
+    title.className = "client-title";
+    title.innerHTML = `<span>${client}</span><span class="client-total">${clientTotal} scans</span>`;
+    block.appendChild(title);
+
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    thead.innerHTML = `<tr><th>Name</th><th class="scans">Scans</th></tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.name}</td><td class="scans">${r.scans}</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    block.appendChild(table);
+
+    container.appendChild(block);
+  }
+
+  document.getElementById("grandTotal").textContent = grandTotal;
+  document.getElementById("updated").textContent = "updated " + new Date().toLocaleTimeString();
+}
+load();
+</script>
+</body>
+</html>
