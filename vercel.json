@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/r/:slug", "destination": "/api/r/:slug" }
+  ],
   "redirects": [
     { "source": "/", "destination": "/dashboard.html" }
   ]
