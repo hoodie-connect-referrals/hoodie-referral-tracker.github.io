@@ -40,13 +40,43 @@ async function go() {
     return;
   }
 
+  const debug = params.get("debug") === "1";
+  const apiUrl = `https://api.counterapi.dev/v2/${WORKSPACE}/${slug}/up`;
+
+  if (debug) {
+    // Debug mode: show exactly what the API returns instead of redirecting,
+    // so we can see the real error instead of guessing.
+    document.getElementById("msg").textContent = "Calling counter API…";
+    try {
+      const res = await fetch(apiUrl, {
+        headers: { "Authorization": `Bearer ${ACCESS_TOKEN}` }
+      });
+      const text = await res.text();
+      document.body.innerHTML = `
+        <div style="max-width:600px;padding:20px;font-family:monospace;font-size:13px;text-align:left;white-space:pre-wrap;word-break:break-all;">
+          <strong>URL called:</strong><br>${apiUrl}<br><br>
+          <strong>HTTP status:</strong> ${res.status}<br><br>
+          <strong>Response body:</strong><br>${text}
+        </div>`;
+    } catch (err) {
+      document.body.innerHTML = `
+        <div style="max-width:600px;padding:20px;font-family:monospace;font-size:13px;text-align:left;white-space:pre-wrap;word-break:break-all;">
+          <strong>URL called:</strong><br>${apiUrl}<br><br>
+          <strong>Request failed before getting a response.</strong><br>
+          This usually means CORS or a network/DNS issue.<br><br>
+          <strong>Error:</strong><br>${err.toString()}
+        </div>`;
+    }
+    return;
+  }
+
   // IMPORTANT: we must wait for this request to actually go out before
   // navigating away. Firing it without awaiting lets the browser cancel
   // the request mid-flight the instant window.location changes, which
   // means scans silently never get counted. A short timeout guards
   // against the counter API being slow or unreachable -- the person
   // should never get stuck waiting more than ~2.5s.
-  const logCall = fetch(`https://api.counterapi.dev/v2/${WORKSPACE}/${slug}/up`, {
+  const logCall = fetch(apiUrl, {
     headers: { "Authorization": `Bearer ${ACCESS_TOKEN}` }
   }).catch(() => {});
   const timeout = new Promise(resolve => setTimeout(resolve, 2500));
