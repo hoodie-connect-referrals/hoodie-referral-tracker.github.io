@@ -33,15 +33,26 @@ const params = new URLSearchParams(window.location.search);
 const slug = params.get("to");
 const entry = LINKS[slug];
 
-if (!entry) {
-  document.getElementById("msg").textContent = "Referral link not found. Double-check the QR code.";
-} else {
-  // Fire-and-forget hit to a free public counter API, then redirect
-  // regardless of whether the logging call succeeds -- the person should
-  // never get stuck waiting on this.
-  fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${slug}/up`).catch(() => {});
+async function go() {
+  if (!entry) {
+    document.getElementById("msg").textContent = "Referral link not found. Double-check the QR code.";
+    return;
+  }
+
+  // IMPORTANT: we must wait for this request to actually go out before
+  // navigating away. Firing it without awaiting lets the browser cancel
+  // the request mid-flight the instant window.location changes, which
+  // means scans silently never get counted. A short timeout guards
+  // against the counter API being slow or unreachable -- the person
+  // should never get stuck waiting more than ~2.5s.
+  const logCall = fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${slug}/up`).catch(() => {});
+  const timeout = new Promise(resolve => setTimeout(resolve, 2500));
+  await Promise.race([logCall, timeout]);
+
   window.location.replace(entry.url);
 }
+
+go();
 </script>
 </body>
 </html>
