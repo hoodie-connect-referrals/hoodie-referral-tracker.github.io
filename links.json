@@ -703,5 +703,45 @@
     "name": "Brennan Monconduit",
     "client": "NorCal Cannabis Co",
     "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=ZcGBr9UIOC"
+  },
+  "vapin-ape-lexi-labraaten": {
+    "name": "Lexi Labraaten",
+    "client": "Vapin Ape",
+    "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=49ibxAEfiT"
+  },
+  "vapin-ape-alexa-gothard": {
+    "name": "Alexa Gothard",
+    "client": "Vapin Ape",
+    "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=4ejqCW25yf"
+  },
+  "vapin-ape-allison-dries": {
+    "name": "Allison Dries",
+    "client": "Vapin Ape",
+    "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=HI6j4nFibv"
+  },
+  "vapin-ape-jamie-cahill": {
+    "name": "Jamie Cahill",
+    "client": "Vapin Ape",
+    "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=4REXcUEfEl"
+  },
+  "vapin-ape-matthew-sargent": {
+    "name": "Matthew Sargent",
+    "client": "Vapin Ape",
+    "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=P8bXZKQutJ"
+  },
+  "vapin-ape-landon-palma": {
+    "name": "Landon Palma",
+    "client": "Vapin Ape",
+    "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=P1Si1VvEF8"
+  },
+  "vapin-ape-alec-stirton": {
+    "name": "Alec Stirton",
+    "client": "Vapin Ape",
+    "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=zKrS9saEPx"
+  },
+  "vapin-ape-brandon-byrne": {
+    "name": "Brandon Byrne",
+    "client": "Vapin Ape",
+    "url": "https://app.hoodieanalytics.com/#/welcome?referralToken=ypXSn7CIGr"
   }
 }
